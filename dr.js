@@ -74,17 +74,14 @@ function docit(txt) {
             type = t;
             return "";
         });
-        itemData.type = esc(text).replace(/\]\s*$/, "").split(/\s*,\s*/);
+        itemData.type = esc(text).replace(/\s*\]\s*$/, "").split(/\s*,\s*/);
         clas = itemData.clas = "dr-" + itemData.type.join(" dr-");
         html += '<div class="' + clas + '">';
         type && (html += '<em class="dr-type dr-type-' + type + '">' + type + '</em>');
         mode = "";
     });
     eve.on("end.*", function (mod, text) {
-        if (clas) {
-            html += "</div>";
-            // clas = 0;
-        }
+        clas && (html += "</div>");
     });
     eve.on("s=.*", function (mod, text) {
         var split = text.split(/(\s*[\(\)]\s*)/);
@@ -127,6 +124,8 @@ function docit(txt) {
         html += types.join(" ") + '</dd>\n<dd class="dr-description">' + (esc(split.join("")) || "&#160;") + '</dd>\n';
         mode = "list";
     });
+
+    console.log("Found " + main.length + " sections.");
 
     for (var i = 0, ii = main.length; i < ii; i++) {
         var doc = main[i],
@@ -174,19 +173,27 @@ function docit(txt) {
             html = "";
             itemData = {};
             eve("item", pointer[level[j]]);
-            res += "<h" + hx + ' id="' + name + '" class="' + itemData.clas + '">' + name;
-            if (itemData.params) {
-                if (itemData.params.length == 1) {
-                    res += "(" + itemData.params[0].join(", ") + ")";
-                } else if (!itemData.params.length) {
-                    res += "()";
+            res += "<h" + hx + ' id="' + name + '" class="' + itemData.clas + '"><a href="#' + name + '" class="dr-hash">&#x2693;</a>' + name;
+            if (itemData.type && itemData.type.indexOf("method") + 1) {
+                if (itemData.params) {
+                    if (itemData.params.length == 1) {
+                        res += "(" + itemData.params[0].join(", ") + ")";
+                    } else if (!itemData.params.length) {
+                        res += "()";
+                    } else {
+                        res += "(\u2026)";
+                    }
                 } else {
-                    res += "(\u2026)";
+                    res += "()";
                 }
             }
             res += "</h" + hx + '>\n' + html;
-            toc += '<li><a href="#' + name + '" class="' + itemData.clas + '"><span>' + name;
-            if ((" " + itemData.clas + " ").indexOf(" dr-method ") + 1) {
+            var indent = 0;
+            name.replace(/\./g, function () {
+                indent ++;
+            });
+            toc += '<li class="dr-lvl' + indent + '"><a href="#' + name + '" class="' + itemData.clas + '"><span>' + name;
+            if (itemData.type && itemData.type.indexOf("method") + 1) {
                 toc += "()";
             }
             toc += '</span></a></li>';
@@ -199,7 +206,6 @@ function docit(txt) {
     return '<!DOCTYPE html>\n<!-- Generated with Dr.js -->\n<html lang="en"><head><meta charset="utf-8"><title>' + (Title ? Title[1] : "") + ' Reference</title><link rel="stylesheet" href="dr.css"></head><body><div class="dr-doc">' + toc + '<h1>' + (Title ? Title[1] : "") + ' Reference</h1>' + res + "</div></body></html>";
 }
 
-
 exec("mkdir -p docs");
 exec("cp " + __dirname + "/dr.css docs/dr.css");
 
@@ -207,12 +213,14 @@ var files = process.ARGV.slice(0);
 files.splice(0, 2);
 
 files.forEach(function (filename) {
-    console.log(filename);
+    console.log("Processing " + filename);
     fs.readFile(filename, "utf-8", function(error, code) {
         if (error) {
             throw error;
         }
-        fs.writeFile(getPath(filename), docit(code) || "No docs found");
+        fs.writeFile(getPath(filename), docit(code) || "No docs found", function () {
+            console.log("Saved to " + getPath(filename));
+        });
     });
 });
 
