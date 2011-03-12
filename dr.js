@@ -4,33 +4,57 @@ var fs = require("fs"),
     _ref = require("child_process"),
     spawn = _ref.spawn,
     exec = _ref.exec;
-function getPath(filepath) {
-    return "docs/" + path.basename(filepath, path.extname(filepath)) + ".html";
+function getPath(filepath, isSrc) {
+    return "docs/" + path.basename(filepath, path.extname(filepath)) + (isSrc ? "-src" : "") + ".html";
 }
-function docit(txt) {
+function docit(txt, filename) {
     var Title = txt.match(/^\s*(?:\/\*(?:\s*\*)?|\/\/)\s*("[^"]+"|\S+)/),
+        github = txt.match(/^\s*(?:\/\*(?:\s*\*)?|\/\/)[\s\S]*\* Github: (.+)\n/i),
         rdoc = /\/\*\\[\s\S]*?\\\*\//g,
         rdoc2 = /^\/\*\\\n\s*\*\s+(.*)\n([\s\S]*)\\\*\/$/,
-        rows = /^\s*(\S)(?:(?!\n)\s(.*))?$/mg,
+        rows = /^\s*(\S)(?:(?!\n)\s(.*))?$/,
         rcode = /`([^`]+)`/g,
         rkeywords = /\b(abstract|boolean|break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|double|else|enum|export|extends|false|final|finally|float|for|function|goto|if|implements|import|in|instanceof|int|interface|long|native|new|null|package|private|protected|public|return|short|static|super|switch|synchronized|this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|undefined)\b/g,
         rstrings = /("[^"]*?(?:\\"[^"]*?)*")/g,
         roperators = /( \= | \- | \+ | \* | \&\& | \|\| | \/ | == | === )/g,
         rdigits = /(\b(0[xX][\da-fA-F]+)|((\.\d+|\b\d+(\.\d+)?)(?:e[-+]?\d+)?))\b/g,
-        rcomments = /(\/\/.*?(?:\n|$)|\/\*(?:.|\s)*?\*\/)$/gm,
+        rcomments = /(\/\/.*?(?:\n|$)|\/\*(?:.|\s)*?\*\/)$/g,
         main = txt.match(rdoc),
         root = {},
         mode,
         html,
+        src = "",
         list = [[]],
         curlist = list[0],
+        srcfilename = path.basename(filename, path.extname(filename)) + "-src.html",
         clas = "";
     if (!main) {
         return;
     }
+    github = github && github[1];
 
     function esc(text) {
         return String(text).replace(/</g, "&lt;").replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, '<em class="amp">&amp;</em>').replace(rcode, "<code>$1</code>").replace(/(^|\s)@([^@\s\]\)"'”’]+)/g, '$1<a href="#$2" class="dr-link">$2</a>');
+    }
+    function syntax(text) {
+        return text.replace(/</g, "&lt;").replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, "&amp;").replace(rkeywords, "<b>$1</b>").replace(rstrings, "<i>$1</i>").replace(roperators, '<span class="s">$1</span>').replace(rdigits, '<span class="d">$1</span>').replace(rcomments, '<span class="c">$1</span>') + "\n";
+    }
+    function syntaxSrc(text) {
+        var isend = text.match(/\*\//);
+        if (text.match(/\/\*/)) {
+            syntaxSrc.inc = true;
+        }
+        var out = text.replace(/</g, "&lt;").replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, "&amp;").replace(rkeywords, "<b>$1</b>").replace(rstrings, "<i>$1</i>").replace(roperators, '<span class="s">$1</span>').replace(rdigits, '<span class="d">$1</span>').replace(/(\/\*(?:.(?!\*\/))+(?:\*\/)?)/g, '<span class="c">$1</span>').replace(rcomments, '<span class="c">$1</span>') + "\n";
+        if (syntaxSrc.inc) {
+            out = out.replace(/(^.*\*\/)/, '<span class="c">$1</span>');
+            if (!isend) {
+                out = '<span class="c">' + out + '</span>';
+            }
+        }
+        if (isend) {
+            syntaxSrc.inc = false;
+        }
+        return out;
     }
 
     eve.on("*.list", function (mod, text) {
@@ -56,7 +80,7 @@ function docit(txt) {
     });
     eve.on("s|.*", function (mod, text) {
         mode != "code" && (html += '<pre class="javascript code"><code>');
-        html += text.replace(/</g, "&lt;").replace(/&/g, "&amp;").replace(rkeywords, "<b>$1</b>").replace(rstrings, "<i>$1</i>").replace(roperators, '<span class="s">$1</span>').replace(rdigits, '<span class="d">$1</span>').replace(rcomments, '<span class="c">$1</span>') + "\n";
+        html += syntax(text);
         mode = "code";
     });
     eve.on("s#.*", function (mod, text) {
@@ -127,34 +151,59 @@ function docit(txt) {
 
     console.log("Found " + main.length + " sections.");
 
+    main = txt.split("\n");
+
+    var beginrg = /^\s*\/\*\\\s*$/,
+        endrg = /^\s*\\\*\/\s*$/,
+        line = 0,
+        pointer,
+        firstline = false,
+        inside = false;
+
     for (var i = 0, ii = main.length; i < ii; i++) {
-        var doc = main[i],
-            split = doc.match(rdoc2),
-            item = {};
-        mode = "";
-        html = "";
-        itemData = {};
-        if (!split) {
+        var doc = main[i];
+        line++;
+        src += '<code id="L' + line + '"><span class="ln">' + line + '</span>' + syntaxSrc(doc) + '</code>';
+        if (doc.match(beginrg)) {
+            inside = firstline = true;
+            pointer = root;
+            itemData = {};
+            html = "";
+            mode = "";
             continue;
         }
-        var title = split[1].split("."),
-            pointer = root;
-        for (var j = 0, jj = title.length; j < jj; j++) {
-            pointer = pointer[title[j]] = pointer[title[j]] || {};
+        if (doc.match(endrg)) {
+            inside = false;
+            eve("end." + mode, null, mode, "");
+            itemData.line = line + 1;
+            (function (value, Clas, data, pointer) {
+                eve.on("item", function () {
+                    if (this == pointer) {
+                        html += value;
+                        itemData = data;
+                    }
+                });
+            })(html, clas, itemData, pointer);
+            clas = "";
+            continue;
         }
-        split[2].replace(rows, function (all, symbol, text) {
-            eve("s" + symbol + "." + mode, symbol, mode, text);
-        });
-        eve("end." + mode, null, mode, "");
-        (function (value, Clas, data, pointer) {
-            eve.on("item", function (point) {
-                if (this == pointer) {
-                    html += value;
-                    itemData = data;
+        if (inside) {
+            var title,
+                data = doc.match(rows);
+            if (data) {
+                var symbol = data[1],
+                    text = data[2];
+                if (symbol == "*" && firstline) {
+                    firstline = false;
+                    title = text.split(".");
+                    for (var j = 0, jj = title.length; j < jj; j++) {
+                        pointer = pointer[title[j]] = pointer[title[j]] || {};
+                    }
+                } else {
+                    eve("s" + symbol + "." + mode, symbol, mode, text);
                 }
-            });
-        })(html, clas, itemData, pointer);
-        clas = "";
+            }
+        }
     }
     html = "";
     var lvl = [],
@@ -173,7 +222,7 @@ function docit(txt) {
             html = "";
             itemData = {};
             eve("item", pointer[level[j]]);
-            res += "<h" + hx + ' id="' + name + '" class="' + itemData.clas + '"><a href="#' + name + '" class="dr-hash">&#x2693;</a>' + name;
+            res += "<h" + hx + ' id="' + name + '" class="' + itemData.clas + '">' + name;
             if (itemData.type && itemData.type.indexOf("method") + 1) {
                 if (itemData.params) {
                     if (itemData.params.length == 1) {
@@ -187,7 +236,8 @@ function docit(txt) {
                     res += "()";
                 }
             }
-            res += "</h" + hx + '>\n' + html;
+            res += '<a href="#' + name + '" title="Link to this section" class="dr-hash">&#x2693;</a><a class="dr-sourceline" title="Go to source" href="' + srcfilename + '#L' + itemData.line + '">&#x27ad;</a></h' + hx + '>\n';
+            res += html;
             var indent = 0;
             name.replace(/\./g, function () {
                 indent ++;
@@ -203,7 +253,7 @@ function docit(txt) {
     };
     runner(root, 2);
     toc += "</ol>";
-    return '<!DOCTYPE html>\n<!-- Generated with Dr.js -->\n<html lang="en"><head><meta charset="utf-8"><title>' + (Title ? Title[1] : "") + ' Reference</title><link rel="stylesheet" href="dr.css"></head><body><div class="dr-doc">' + toc + '<h1>' + (Title ? Title[1] : "") + ' Reference</h1>' + res + "</div></body></html>";
+    return ['<!DOCTYPE html>\n<!-- Generated with Dr.js -->\n<html lang="en"><head><meta charset="utf-8"><title>' + (Title ? Title[1] : "") + ' Reference</title><link rel="stylesheet" href="dr.css"></head><body id="dr-js"><div class="dr-doc">' + toc + '<h1>' + (Title ? Title[1] : "") + ' Reference</h1><p class="dr-source">Check out the source: <a href="' + srcfilename + '">' + filename + '</a></p>' + res + "</div></body></html>", '<!DOCTYPE html>\n<!-- Generated with Dr.js -->\n<html lang="en"><head><meta charset="utf-8"><title>' + filename + '</title><link rel="stylesheet" href="dr.css"></head><body id="src-dr-js">' + src + '</body></html>'];
 }
 
 exec("mkdir -p docs");
@@ -218,8 +268,11 @@ files.forEach(function (filename) {
         if (error) {
             throw error;
         }
-        fs.writeFile(getPath(filename), docit(code) || "No docs found", function () {
-            console.log("Saved to " + getPath(filename));
+        var res = docit(code, filename);
+        fs.writeFile(getPath(filename), res[0] || "No docs found", function () {
+            fs.writeFile(getPath(filename, 1), res[1] || "No docs found", function () {
+                console.log("Saved to " + getPath(filename));
+            });
         });
     });
 });

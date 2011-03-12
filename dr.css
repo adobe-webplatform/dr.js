@@ -1,6 +1,11 @@
-body {
+#dr-js {
     background: #999;
     margin: 0;
+    padding: 0;
+}
+#src-dr-js {
+    background: #000;
+    margin: 1em;
     padding: 0;
 }
 .dr-doc {
@@ -27,23 +32,24 @@ pre.code {
     padding: 1em 2.5em;
     margin: 0 -2.5em;
 }
-pre.javascript code b {
+code b {
     color: #e9df8f;
     font-weight: normal;
 }
-pre.javascript code i,
-pre.javascript code i *,
-pre.javascript code i .d {
+code i,
+code i *,
+code i .d {
     color: #8b9967;
     font-style: normal;
 }
-pre.javascript code .s {
+code .s {
     color: #e7be61;
 }
-pre.javascript code .d {
+code .d {
     color: #cf6a4c;
 }
-pre.javascript code .c,pre.javascript code .c * {
+code .c,
+code .c * {
     color: #999;
     font-style: italic;
 }
@@ -66,6 +72,8 @@ dd.dr-type {
 }
 dd.dr-description {
     display: table;
+    min-height: 1.5em;
+    border: solid 1px #eee;
 }
 .dr-type {
     float: left;
@@ -223,18 +231,18 @@ p.header {
 .dr-toc a.dr-method:hover {
     text-shadow: 0 0 2px #c66;
 }
-a.dr-hash {
+a.dr-hash,
+a.dr-sourceline {
     -webkit-transition: opacity 0.2s linear;
     color: #333;
-    float: left;
     font-family: Menlo, "Arial Unicode MS", sans-serif;
-    left: -20px;
-    line-height: 1;
-    margin: 0 -1em 0 -.75em;
-    overflow: hidden;
+/*    left: -20px;*/
+/*    line-height: 1;*/
+    margin: 0 0 0 .3em;
+/*    overflow: hidden;*/
     opacity: 0;
     text-decoration: none;
-    width: 1em;
+/*    width: 1em;*/
 }
 a.dr-link {
     position: relative;
@@ -251,9 +259,52 @@ a.dr-link:visited {
 h2:hover a.dr-hash,
 h3:hover a.dr-hash,
 h4:hover a.dr-hash,
-h5:hover a.dr-hash {
+h5:hover a.dr-hash,
+h2:hover a.dr-sourceline,
+h3:hover a.dr-sourceline,
+h4:hover a.dr-sourceline,
+h5:hover a.dr-sourceline {
     opacity: 1;
 }
 p {
     margin: 0 0 .5em;
+}
+
+.dr-source-line {
+    margin: 0;
+}
+.dr-source-line a {
+    -webkit-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border-radius: 5px;
+    color: #000;
+    background: #999;
+    font-weight: 400;
+    font-size: .75em;
+    text-decoration: none;
+    padding: 5px;
+}
+#src-dr-js code {
+    -webkit-transition: background 0.2s linear;
+    background: #000;
+    display: block;
+    color: #fff;
+    font-family: Menlo, Consolas, Monaco, "Lucida Console", monospace;
+    white-space: pre;
+    padding-left: 100px;
+    position: relative;
+    line-height: 1.2;
+}
+#src-dr-js code:hover {
+    background: #666;
+}
+#src-dr-js code .ln {
+    position: absolute;
+    left: 0;
+    color: #000;
+    width: 70px;
+    text-align: right;
 }
