@@ -15,14 +15,15 @@ function docit(txt, filename) {
         rows = /^\s*(\S)(?:(?!\n)\s(.*))?$/,
         rcode = /`([^`]+)`/g,
         rkeywords = /\b(abstract|boolean|break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|double|else|enum|export|extends|false|final|finally|float|for|function|goto|if|implements|import|in|instanceof|int|interface|long|native|new|null|package|private|protected|public|return|short|static|super|switch|synchronized|this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|undefined)\b/g,
-        rstrings = /("[^"]*?(?:\\"[^"]*?)*")/g,
-        roperators = /( \= | \- | \+ | \* | \&\& | \|\| | \/ | == | === )/g,
+        rstrings = /("[^"]*?(?:\\"[^"]*?)*"|'[^']*?(?:\\'[^']*?)*')/g,
+        roperators = /( \= | \- | \+ | % | \* | \&\& | \&amp;\&amp; | \& | \&amp; | \|\| | \| | \/ | == | === )/g,
         rdigits = /(\b(0[xX][\da-fA-F]+)|((\.\d+|\b\d+(\.\d+)?)(?:e[-+]?\d+)?))\b/g,
         rcomments = /(\/\/.*?(?:\n|$)|\/\*(?:.|\s)*?\*\/)$/g,
         main = txt.match(rdoc),
         root = {},
         mode,
         html,
+        jsonLevel = 0,
         src = "",
         list = [[]],
         curlist = list[0],
@@ -34,7 +35,7 @@ function docit(txt, filename) {
     github = github && github[1];
 
     function esc(text) {
-        return String(text).replace(/</g, "&lt;").replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, '<em class="amp">&amp;</em>').replace(rcode, "<code>$1</code>").replace(/(^|\s)@([^@\s\]\)"'”’]+)/g, '$1<a href="#$2" class="dr-link">$2</a>');
+        return String(text).replace(/</g, "&lt;").replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, '<em class="amp">&amp;</em>').replace(rcode, "<code>$1</code>").replace(/(^|\s)@([\w\.\_\$]*[\w\_\$])/g, '$1<a href="#$2" class="dr-link">$2</a>');
     }
     function syntax(text) {
         return text.replace(/</g, "&lt;").replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, "&amp;").replace(rkeywords, "<b>$1</b>").replace(rstrings, "<i>$1</i>").replace(roperators, '<span class="s">$1</span>').replace(rdigits, '<span class="d">$1</span>').replace(rcomments, '<span class="c">$1</span>') + "\n";
@@ -59,6 +60,9 @@ function docit(txt, filename) {
 
     eve.on("*.list", function (mod, text) {
         this != "-" && (html += "</dl>\n");
+    });
+    eve.on("*.json", function (mod, text) {
+        this != "o" && (html += "</ol>\n");
     });
     eve.on("*.text", function (mod, text) {
         this != "*" && (html += "</p>\n");
@@ -147,6 +151,33 @@ function docit(txt, filename) {
         }
         html += types.join(" ") + '</dd>\n<dd class="dr-description">' + (esc(split.join("")) || "&#160;") + '</dd>\n';
         mode = "list";
+    });
+    eve.on("so.*", function (mod, text) {
+        if (mode != "json") {
+            html += '<ol class="dr-json">';
+        }
+        var desc = text.match(/^\s*([^\(\s]+)\s*\(([^\)]+)\)\s*(.*?)\s*$/),
+            start = text.match(/\s*\{\s*$/),
+            end = text.match(/\s*\}\s*,?\s*$/);
+        !end && (html += "<li>");
+        if (desc) {
+            html += '<span class="dr-json-key">' + desc[1] + '</span>';
+            var types = desc[2].split(/\s*\|\s*/);
+            html += '<span class="dr-type">';
+            for (var i = 0, ii = types.length; i < ii; i++) {
+                types[i] = '<em class="dr-type-' + types[i] + '">' + types[i] + '</em>';
+            }
+            html += types.join(" ") + '</span><span class="dr-json-description">' + (esc(desc[3]) || "&#160;") + '</span>\n';
+        } else {
+            !end && (html += text);
+        }
+        if (start) {
+            html += '<ol class="dr-json">';
+        }
+        if (end) {
+            html += '</ol></li><li>' + text + '</li>';
+        }
+        mode = "json";
     });
 
     console.log("Found " + main.length + " sections.");
@@ -253,7 +284,7 @@ function docit(txt, filename) {
     };
     runner(root, 2);
     toc += "</ol>";
-    return ['<!DOCTYPE html>\n<!-- Generated with Dr.js -->\n<html lang="en"><head><meta charset="utf-8"><title>' + (Title ? Title[1] : "") + ' Reference</title><link rel="stylesheet" href="dr.css"></head><body id="dr-js"><div class="dr-doc">' + toc + '<h1>' + (Title ? Title[1] : "") + ' Reference</h1><p class="dr-source">Check out the source: <a href="' + srcfilename + '">' + filename + '</a></p>' + res + "</div></body></html>", '<!DOCTYPE html>\n<!-- Generated with Dr.js -->\n<html lang="en"><head><meta charset="utf-8"><title>' + filename + '</title><link rel="stylesheet" href="dr.css"></head><body id="src-dr-js">' + src + '</body></html>'];
+    return ['<!DOCTYPE html>\n<!-- Generated with Dr.js -->\n<html lang="en"><head><meta charset="utf-8"><title>' + (Title ? Title[1] : "") + ' Reference</title><link rel="stylesheet" href="dr.css"></head><body id="dr-js"><div id="dr">' + toc + '<div class="dr-doc"><h1>' + (Title ? Title[1] : "") + ' Reference</h1><p class="dr-source">Check out the source: <a href="' + srcfilename + '">' + path.basename(filename) + '</a></p>' + res + "</div></div></body></html>", '<!DOCTYPE html>\n<!-- Generated with Dr.js -->\n<html lang="en"><head><meta charset="utf-8"><title>' + path.basename(filename) + '</title><link rel="stylesheet" href="dr.css"></head><body id="src-dr-js">' + src + '</body></html>'];
 }
 
 exec("mkdir -p docs");
@@ -271,7 +302,7 @@ files.forEach(function (filename) {
         var res = docit(code, filename);
         fs.writeFile(getPath(filename), res[0] || "No docs found", function () {
             fs.writeFile(getPath(filename, 1), res[1] || "No docs found", function () {
-                console.log("Saved to " + getPath(filename));
+                console.log("Saved to \033[31m" + getPath(filename) + "\033[0m and \033[31m" + getPath(filename, 1) + "\033[0m");
             });
         });
     });
