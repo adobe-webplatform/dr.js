@@ -19,6 +19,9 @@ function docit(txt, filename) {
         roperators = /( \= | \- | \+ | % | \* | \&\& | \&amp;\&amp; | \& | \&amp; | \|\| | \| | \/ | == | === )/g,
         rdigits = /(\b(0[xX][\da-fA-F]+)|((\.\d+|\b\d+(\.\d+)?)(?:e[-+]?\d+)?))\b/g,
         rcomments = /(\/\/.*?(?:\n|$)|\/\*(?:.|\s)*?\*\/)$/g,
+        rhref = /(https?:\/\/[^\s"]+[\d\w_\-\/])/g,
+        rlink = /(^|\s)@([\w\.\_\$]*[\w\_\$])/g,
+        ramp = /&(?!\w+;|#\d+;|#x[\da-f]+;)/gi,
         main = txt.match(rdoc),
         root = {},
         mode,
@@ -35,10 +38,10 @@ function docit(txt, filename) {
     github = github && github[1];
 
     function esc(text) {
-        return String(text).replace(/</g, "&lt;").replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, '<em class="amp">&amp;</em>').replace(rcode, "<code>$1</code>").replace(/(^|\s)@([\w\.\_\$]*[\w\_\$])/g, '$1<a href="#$2" class="dr-link">$2</a>');
+        return String(text).replace(/</g, "&lt;").replace(ramp, '<em class="amp">&amp;</em>').replace(rcode, "<code>$1</code>").replace(rlink, '$1<a href="#$2" class="dr-link">$2</a>').replace(rhref, '<a href="$1" rel="external">$1</a>');
     }
     function syntax(text) {
-        return text.replace(/</g, "&lt;").replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, "&amp;").replace(rkeywords, "<b>$1</b>").replace(rstrings, "<i>$1</i>").replace(roperators, '<span class="s">$1</span>').replace(rdigits, '<span class="d">$1</span>').replace(rcomments, '<span class="c">$1</span>') + "\n";
+        return text.replace(/</g, "&lt;").replace(ramp, "&amp;").replace(rkeywords, "<b>$1</b>").replace(rstrings, "<i>$1</i>").replace(roperators, '<span class="s">$1</span>').replace(rdigits, '<span class="d">$1</span>').replace(rcomments, '<span class="c">$1</span>') + "\n";
     }
     function syntaxSrc(text) {
         var isend = text.match(/\*\//);
@@ -76,7 +79,7 @@ function docit(txt, filename) {
     eve.on("s*.*", function (mod, text) {
         mode != "text" && (html += "<p>");
         if (text) {
-            html += esc(text);
+            html += esc(text) + "\n";
         } else {
             html += "</p>\n<p>";
         }
@@ -253,7 +256,7 @@ function docit(txt, filename) {
             html = "";
             itemData = {};
             eve("item", pointer[level[j]]);
-            res += "<h" + hx + ' id="' + name + '" class="' + itemData.clas + '">' + name;
+            res += "<h" + hx + ' id="' + name + '" class="' + itemData.clas + '"><i class="dr-trixie">&#160;</i>' + name;
             if (itemData.type && itemData.type.indexOf("method") + 1) {
                 if (itemData.params) {
                     if (itemData.params.length == 1) {
@@ -267,7 +270,9 @@ function docit(txt, filename) {
                     res += "()";
                 }
             }
-            res += '<a href="#' + name + '" title="Link to this section" class="dr-hash">&#x2693;</a><a class="dr-sourceline" title="Go to source" href="' + srcfilename + '#L' + itemData.line + '">&#x27ad;</a></h' + hx + '>\n';
+            res += '<a href="#' + name + '" title="Link to this section" class="dr-hash">&#x2693;</a>';
+            itemData.line && (res += '<a class="dr-sourceline" title="Go to source" href="' + srcfilename + '#L' + itemData.line + '">&#x27ad;</a>');
+            res += '</h' + hx + '>\n';
             res += html;
             var indent = 0;
             name.replace(/\./g, function () {
