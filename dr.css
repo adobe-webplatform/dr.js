@@ -23,23 +23,26 @@ html, body {
     margin: 0;
     overflow: auto;
     padding: 0 30px;
-    width: 900px;
+    width: 800px;
 }
 .dr-toc {
-    margin: 0;
-    padding: 0 16px;
     background: #ddd;
-    list-style: none;
-    font-family: Menlo, Consolas, Monaco, "Lucida Console", monospace;
-    overflow: auto;
+    background: -moz-linear-gradient(left, #ddd 0%, #eee 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%, #ddd), color-stop(100%, #eee)); /* webkit */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ddd', endColorstr='#eee',GradientType=1); /* ie */
     border-right: solid #ddd 3px;
-    height: 100%;
     float: right;
+    font-family: Menlo, Consolas, Monaco, "Lucida Console", monospace;
+    height: 100%;
+    list-style: none;
+    margin: 0;
+    overflow: auto;
+    padding: 0 16px;
     width: 240px;
 }
 #dr {
     margin: 0 auto;
-    width: 1252px;
+    width: 1152px;
     height: 100%;
 }
 ::-moz-selection {
