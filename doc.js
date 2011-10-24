@@ -6,7 +6,7 @@
  */
 var fs = require("fs"),
     path = require("path"),
-    eve = require("./eve.js");
+    eve = require("eve");
 module.exports = function (txt, filename) {
     var Title = txt.match(/^\s*(?:\/\*(?:\s*\*)?|\/\/)\s*("[^"]+"|\S+)/),
         rdoc = /\/\*\\[\s\S]*?\\\*\//g,

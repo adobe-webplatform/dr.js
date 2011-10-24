@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+var dr = require('../dr'),
+	fs = require('fs'),
+	path = require('path'),
+	program = require('commander');
+	
+function progInit() {
+	program.usage('target1.js [target2.js] ..');
+	program.parse(process.argv);
+
+	dr(program.args);
+} // progInit
+	
+fs.readFile(path.join(__dirname, '../package.json'), 'utf8', function(err, contents) {
+	if (! err) {
+		var packageData = JSON.parse(contents);
+		
+		program.version(packageData.version);
+	} // if
+
+	progInit();
+});
