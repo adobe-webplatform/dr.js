@@ -10,7 +10,7 @@
         
     "version": "0.0.3",
     "main": "dr",
-    "bin": { "dr": "./bin/dr" },
+    "bin": { "dr-js": "./bin/dr-js" },
     
     "dependencies": {
         "commander": "0.2.x",
