@@ -1,0 +1,15 @@
+{
+    "title": "Raphaël",
+    "output": "../../raphael/reference.html",
+    "scripts": ["raphael.js", "reference.js"],
+    "files": [{
+        "url": "../../raphael/raphael.core.js",
+        "link": "https://github.com/DmitryBaranovskiy/raphael/blob/master/raphael.core.js"
+    }, {
+        "url": "../../raphael/raphael.svg.js",
+        "link": "https://github.com/DmitryBaranovskiy/raphael/blob/master/raphael.svg.js"
+    }, {
+        "url": "../eve/eve.js",
+        "link": "https://github.com/DmitryBaranovskiy/eve/blob/master/eve.js"
+    }]
+}

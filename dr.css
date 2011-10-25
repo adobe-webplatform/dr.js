@@ -59,6 +59,9 @@ html, body {
 .dr-property em {
     font-family: Menlo, Consolas, Monaco, "Lucida Console", monospace;
 }
+.extra {
+    display: none;
+}
 pre.code code {
     color: #fff;
 }

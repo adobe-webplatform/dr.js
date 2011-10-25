@@ -1,5 +1,5 @@
 /*
- * Dr.js 0.0.3 - Simple JavaScript Documentation
+ * Dr.js 0.0.5 - Simple JavaScript Documentation
  *
  * Copyright (c) 2011 Dmitry Baranovskiy (http://dmitry.baranovskiy.com/)
  * Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
@@ -7,8 +7,27 @@
 var fs = require("fs"),
     path = require("path"),
     eve = require("eve");
-module.exports = function (txt, filename) {
-    var Title = txt.match(/^\s*(?:\/\*(?:\s*\*)?|\/\/)\s*("[^"]+"|\S+)/),
+/*\
+ * dr
+ [ method ]
+ **
+ * Parses comments from the given string and generates two HTML sources.
+ **
+ > Arguments
+ **
+ - txt (string) source code
+ - filename (string) filename of the given source
+ **
+ = (object)
+ o {
+ o     sections (number) number of comment sections found
+ o     loc (number) number of lines of code in source file
+ o     doc (string) HTML for the documentation file
+ o     source (string) HTML for the highlighted source file, it will be linked from the doc as `basename + "-src.html"`, i.e. if filename is “dr.js”, then it will be “dr-src.html”
+ o }
+\*/
+module.exports = function (txt, filename, sourceFileName) {
+    var Title = txt.match(/^[^"]*"([^"]+)"/),
         rdoc = /\/\*\\[\s\S]*?\\\*\//g,
         rdoc2 = /^\/\*\\\n\s*\*\s+(.*)\n([\s\S]*)\\\*\/$/,
         rows = /^\s*(\S)(?:(?!\n)\s(.*))?$/,
@@ -29,11 +48,14 @@ module.exports = function (txt, filename) {
         src = "",
         list = [[]],
         curlist = list[0],
-        srcfilename = path.basename(filename, path.extname(filename)) + "-src.html",
+        srcfilename = sourceFileName || (path.basename(filename, path.extname(filename)) + "-src.html"),
         clas = "",
+        TOC = [],
+        utoc = {},
+        chunks = {},
         out = {};
     if (!main) {
-        return;
+        return {};
     }
 
     function esc(text) {
@@ -60,22 +82,22 @@ module.exports = function (txt, filename) {
         return out;
     }
 
-    eve.on("*.list", function (mod, text) {
+    eve.on("doc.*.list", function (mod, text) {
         this != "-" && (html += "</dl>\n");
     });
-    eve.on("*.json", function (mod, text) {
+    eve.on("doc.*.json", function (mod, text) {
         this != "o" && (html += "</ol>\n");
     });
-    eve.on("*.text", function (mod, text) {
+    eve.on("doc.*.text", function (mod, text) {
         this != "*" && (html += "</p>\n");
     });
-    eve.on("*.head", function (mod, text) {
+    eve.on("doc.*.head", function (mod, text) {
         this != "*" && (html += "</p>\n");
     });
-    eve.on("*.code", function (mod, text) {
+    eve.on("doc.*.code", function (mod, text) {
         this != "|" && (html += "</code></pre>\n");
     });
-    eve.on("s*.*", function (mod, text) {
+    eve.on("doc.s*.*", function (mod, text) {
         mode != "text" && (html += "<p>");
         if (text) {
             html += esc(text) + "\n";
@@ -84,21 +106,21 @@ module.exports = function (txt, filename) {
         }
         mode = "text";
     });
-    eve.on("s|.*", function (mod, text) {
+    eve.on("doc.s|.*", function (mod, text) {
         mode != "code" && (html += '<pre class="javascript code"><code>');
         html += syntax(text);
         mode = "code";
     });
-    eve.on("s#.*", function (mod, text) {
+    eve.on("doc.s#.*", function (mod, text) {
         html += text + "\n";
         mode = "html";
     });
-    eve.on("s>.*", function (mod, text) {
+    eve.on("doc.s>.*", function (mod, text) {
         mode != "head" && (html += '<p class="header">');
         html += esc(text) + "\n";
         mode = "head";
     });
-    eve.on("s[.*", function (mod, text) {
+    eve.on("doc.s[.*", function (mod, text) {
         var type;
         text = esc(text).replace(/\(([^\)]+)\)/, function (all, t) {
             type = t;
@@ -110,10 +132,10 @@ module.exports = function (txt, filename) {
         type && (html += '<em class="dr-type dr-type-' + type + '">' + type + '</em>');
         mode = "";
     });
-    eve.on("end.*", function (mod, text) {
+    eve.on("doc.end.*", function (mod, text) {
         clas && (html += "</div>");
     });
-    eve.on("s=.*", function (mod, text) {
+    eve.on("doc.s=.*", function (mod, text) {
         var split = text.split(/(\s*[\(\)]\s*)/);
         split.shift();
         split.shift();
@@ -126,7 +148,7 @@ module.exports = function (txt, filename) {
         html += types.join(" ") + ' <span class="dr-description">' + esc(split.join("")) + "</span></p>\n";
         mode = "";
     });
-    eve.on("s-.*", function (mod, text) {
+    eve.on("doc.s-.*", function (mod, text) {
         itemData.params = itemData.params || [];
         if (mode != "list") {
             html += '<dl class="dr-parameters">';
@@ -154,7 +176,7 @@ module.exports = function (txt, filename) {
         html += types.join(" ") + '</dd>\n<dd class="dr-description">' + (esc(split.join("")) || "&#160;") + '</dd>\n';
         mode = "list";
     });
-    eve.on("so.*", function (mod, text) {
+    eve.on("doc.so.*", function (mod, text) {
         if (mode != "json") {
             html += '<ol class="dr-json">';
         }
@@ -183,13 +205,10 @@ module.exports = function (txt, filename) {
     });
 
     out.sections = main.length;
-    // console.log("Found \033[31m" + main.length + "\033[0m sections.");
 
     main = txt.split("\n");
 
     out.loc = main.length;
-
-    // console.log("Processing \033[31m" + main.length + "\033[0m lines of code...");
 
     var beginrg = /^\s*\/\*\\\s*$/,
         endrg = /^\s*\\\*\/\s*$/,
@@ -212,10 +231,10 @@ module.exports = function (txt, filename) {
         }
         if (doc.match(endrg)) {
             inside = false;
-            eve("end." + mode, null, mode, "");
+            eve("doc.end." + mode, null, mode, "");
             itemData.line = line + 1;
             (function (value, Clas, data, pointer) {
-                eve.on("item", function () {
+                eve.on("doc.item", function () {
                     if (this == pointer) {
                         html += value;
                         itemData = data;
@@ -238,18 +257,18 @@ module.exports = function (txt, filename) {
                         pointer = pointer[title[j]] = pointer[title[j]] || {};
                     }
                 } else {
-                    eve("s" + symbol + "." + mode, symbol, mode, text);
+                    eve("doc.s" + symbol + "." + mode, symbol, mode, text);
                 }
             }
         }
     }
     html = "";
     var lvl = [],
-        toc = '<ol class="dr-toc">',
+        toc = "",
         itemData,
         res = "";
     var runner = function (pointer, hx) {
-        var level = [], name;
+        var level = [], name, chunk;
         for (var node in pointer) {
             level.push(node);
         }
@@ -258,42 +277,59 @@ module.exports = function (txt, filename) {
             lvl.push(level[j]);
             name = lvl.join(".");
             html = "";
+            chunk = "";
             itemData = {};
-            eve("item", pointer[level[j]]);
-            res += "<h" + hx + ' id="' + name + '" class="' + itemData.clas + '"><i class="dr-trixie">&#160;</i>' + name;
+            eve("doc.item", pointer[level[j]]);
+            chunk += '<div class="' + name.replace(/\./g, "-") + '-section"><h' + hx + ' id="' + name + '" class="' + itemData.clas + '"><i class="dr-trixie">&#160;</i>' + name;
             if (itemData.type && itemData.type.indexOf("method") + 1) {
                 if (itemData.params) {
                     if (itemData.params.length == 1) {
-                        res += "(" + itemData.params[0].join(", ") + ")";
+                        chunk += "(" + itemData.params[0].join(", ") + ")";
                     } else if (!itemData.params.length) {
-                        res += "()";
+                        chunk += "()";
                     } else {
-                        res += "(\u2026)";
+                        chunk += "(\u2026)";
                     }
                 } else {
-                    res += "()";
+                    chunk += "()";
                 }
             }
-            res += '<a href="#' + name + '" title="Link to this section" class="dr-hash">&#x2693;</a>';
-            itemData.line && (res += '<a class="dr-sourceline" title="Go to line ' + itemData.line + ' in the source" href="' + srcfilename + '#L' + itemData.line + '">&#x27ad;</a>');
-            res += '</h' + hx + '>\n';
-            res += html;
+            chunk += '<a href="#' + name + '" title="Link to this section" class="dr-hash">&#x2693;</a>';
+            itemData.line && (chunk += '<a class="dr-sourceline" title="Go to line ' + itemData.line + ' in the source" href="' + srcfilename + '#L' + itemData.line + '">&#x27ad;</a>');
+            chunk += '</h' + hx + '>\n';
+            chunk += '<div class="extra" id="' + name + '-extra"></div></div>';
+            chunk += html;
+            chunks[name] = chunks[name] || "";
+            chunks[name] += chunk;
+            res += chunk;
             var indent = 0;
             name.replace(/\./g, function () {
-                indent ++;
+                indent++;
             });
             toc += '<li class="dr-lvl' + indent + '"><a href="#' + name + '" class="' + itemData.clas + '"><span>' + name;
             if (itemData.type && itemData.type.indexOf("method") + 1) {
                 toc += "()";
             }
             toc += '</span></a></li>';
+            if (!utoc[name]) {
+                TOC.push({
+                    indent: indent,
+                    name: name,
+                    clas: itemData.clas,
+                    brackets: itemData.type && itemData.type.indexOf("method") + 1 ? "()" : ""
+                });
+                utoc[name] = 1;
+            }
             runner(pointer[level[j]], hx + 1);
             lvl.pop();
         }
     };
+
     runner(root, 2);
-    toc += "</ol>";
-    out.doc = '<!DOCTYPE html>\n<!-- Generated with Dr.js -->\n<html lang="en"><head><meta charset="utf-8"><title>' + (Title ? Title[1] : "") + ' Reference</title><link rel="stylesheet" href="dr.css"></head><body id="dr-js"><div id="dr">' + toc + '<div class="dr-doc"><h1>' + (Title ? Title[1] : "") + ' Reference</h1><p class="dr-source">Check out the source: <a href="' + srcfilename + '">' + path.basename(filename) + '</a></p>' + res + "</div></div></body></html>";
+    out.chunks = chunks;
+    out.toc = TOC;
+    out.title = Title ? Title[1] : "";
     out.source = '<!DOCTYPE html>\n<!-- Generated with Dr.js -->\n<html lang="en"><head><meta charset="utf-8"><title>' + path.basename(filename) + '</title><link rel="stylesheet" href="dr.css"></head><body id="src-dr-js">' + src + '</body></html>';
+    eve.unbind("doc.*");
     return out;
 };
