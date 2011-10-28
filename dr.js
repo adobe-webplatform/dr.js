@@ -36,7 +36,7 @@ function main(files, targetDir, reporter) {
     files.splice(0, 2);
 
     if (!files.length) {
-        reporter("Usage: node dr.js <your_file.js>");
+        reporter("Usage: " + (module.parent ? "dr-js " : "node dr.js ") + "<your_file.js>");
         process.exit(1);
     }
 
