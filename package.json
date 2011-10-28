@@ -8,7 +8,7 @@
         "url"   : "http://dmitry.baranovskiy.com"
     },
         
-    "version": "0.0.3",
+    "version": "0.0.5",
     "main": "dr",
     "bin": { "dr-js": "./bin/dr-js" },
     
@@ -26,7 +26,7 @@
     },
     
     "bugs": {
-        "web": "http://github.com/DmitryBaranovskiy/dr.js/issues"
+        "url": "http://github.com/DmitryBaranovskiy/dr.js/issues"
     },
 
     "contributors": [

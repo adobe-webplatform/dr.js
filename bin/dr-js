@@ -9,7 +9,7 @@ function progInit() {
 	program.usage('target1.js [target2.js] ..');
 	program.parse(process.argv);
 
-	dr(program.args);
+	dr(process.argv);
 } // progInit
 	
 fs.readFile(path.join(__dirname, '../package.json'), 'utf8', function(err, contents) {
