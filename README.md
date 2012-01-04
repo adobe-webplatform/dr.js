@@ -27,16 +27,23 @@ A dr.js comment section is a block comment similar to the one shown below:
  * itemname
  [ itemtype ]
  **
- * Description of the itemname
- **
+ * Description: use # to write html
+ # <ul>
+ #  <li>list</li>
+ # </ul>
  > Arguments
- **
- - arg1 (string) The first argument
- - arg2 (number) The second argument
- - callback (function) A callback function 
- **
+ - arg1 (string) The first argument (make a link to another section of the doc: @itemname2)
+ - arg2 (object) The third argument is an object of `key/value` pairs (the text key/value will appear between <code></code>)
+ o {
+ o  key1 (string) The first key/value
+ o  key2 (bool) The second key/value
+ o }
+ - arg3 (bool) #optional The second argument is optional and will be display as itemname(arg1, arg2, [arg3])
  = (object) the return value for the function
- **
- **
+ > Usage
+ | itemname('example', {
+ |    key1: 'hello world',
+ |    key2: true
+ |  });
 \*/
 ```
