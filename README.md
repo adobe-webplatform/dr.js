@@ -36,9 +36,9 @@ A dr.js comment section is a block comment similar to the one shown below:
  - arg2 (object) The third argument is an object of `key/value` pairs (the text key/value will appear between <code></code>)
  o {
  o  key1 (string) The first key/value
- o  key2 (bool) The second key/value
+ o  key2 (boolean) The second key/value
  o }
- - arg3 (bool) #optional The second argument is optional and will be display as itemname(arg1, arg2, [arg3])
+ - arg3 (boolean) #optional The second argument is optional and will be display as itemname(arg1, arg2, [arg3])
  = (object) the return value for the function
  > Usage
  | itemname('example', {
