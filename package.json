@@ -1,0 +1,34 @@
+{
+    "name": "dr-js",
+    "description": "Tiny documentation builder",
+    "tags": ["documentation"],
+    "author"  : {
+        "name"  : "Dmitry Baranovskiy",
+        "email" : "dmitry@baranovskiy.com",
+        "url"   : "http://dmitry.baranovskiy.com"
+    },
+        
+    "version": "0.0.6",
+    "main": "dr",
+    "bin": { "dr-js": "./bin/dr-js" },
+    
+    "dependencies": {
+        "commander": "0.2.x",
+        "eve": "0.x.x"
+    },
+    
+    "devDependencies": {
+    },
+    
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/DmitryBaranovskiy/dr.js.git"
+    },
+    
+    "bugs": {
+        "url": "http://github.com/DmitryBaranovskiy/dr.js/issues"
+    },
+
+    "contributors": [
+    ]
+}

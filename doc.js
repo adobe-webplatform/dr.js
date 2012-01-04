@@ -6,7 +6,7 @@
  */
 var fs = require("fs"),
     path = require("path"),
-    eve = require("./eve.js");
+    eve = require("eve");
 /*\
  * dr
  [ method ]
