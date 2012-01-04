@@ -23,8 +23,15 @@ function main(files, targetDir, reporter) {
     // default the reporter to the console
     reporter = reporter || console.log;
     
-    exec("mkdir -p " + path.resolve(targetDir, "docs"));
-    exec("cp " + __dirname + "/dr.css " + path.resolve(targetDir, "docs/dr.css"));
+    // if windows, change commands and slashes
+    if(!!process.platform.match(/^win/)) {
+        exec("mkdir " + path.resolve(targetDir, "docs"));
+        exec("copy " + __dirname + "\\dr.css " + path.resolve(targetDir, "docs\\dr.css"));
+    }
+    else {
+        exec("mkdir -p " + path.resolve(targetDir, "docs"));
+        exec("cp " + __dirname + "/dr.css " + path.resolve(targetDir, "docs/dr.css"));
+    }
 
     var srcs = [],
         chunks = {},
