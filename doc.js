@@ -1,5 +1,5 @@
 /*
- * Dr.js 0.0.5 - Simple JavaScript Documentation
+ * Dr.js 0.0.6 - Simple JavaScript Documentation
  *
  * Copyright (c) 2011 Dmitry Baranovskiy (http://dmitry.baranovskiy.com/)
  * Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
@@ -160,7 +160,7 @@ module.exports = function (txt, filename, sourceFileName) {
             optional = true;
             return "";
         });
-        split = text.split(/(\s*[\(\)]\s*)/);
+        var split = text.split(/(\s*[\(\)]\s*)/);
         data.push((optional ? "[" : "") + split[0] + (optional ? "]" : ""));
         html += '<dt class="dr-param' + (optional ? " optional" : "") + '">' + split.shift() + '</dt>\n';
         split.shift();
