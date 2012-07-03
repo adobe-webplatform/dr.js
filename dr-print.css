@@ -3,48 +3,30 @@ html, body {
     padding: 0;
 }
 #dr-js {
-    background: #999;
     margin: 0;
     padding: 0;
 }
 #src-dr-js {
-    background: #000;
     margin: 1em;
     padding: 0;
 }
 .dr-doc {
-    background: #eee;
-    border-right: solid #eee 3px;
-    float: right;
     font: 300 16px/1.4 "Myriad Pro", "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif;
-    margin: 0 -275px 0 0;
+    margin: 0;
     padding: 0 30px 10px;
-    width: 800px;
-	border-right: 275px solid #ddd;
 }
 .dr-toc {
-    background: #ddd;
-    border-right: solid #ddd 3px;
-    float: right;
     font-family: Menlo, Consolas, Monaco, "Lucida Console", monospace;
     list-style: none;
     margin: 0;
     padding: 0 16px;
-    width: 240px;
-	position: relative;
+	float: right;
+}
+.dr-toc input {
+	display: none;
 }
 #dr {
     margin: 0 auto;
-    width: 1152px;
-    height: 100%;
-}
-::-moz-selection {
-    background: #c00;
-    color: #fff;
-}
-::selection {
-    background: #c00;
-    color: #fff;
 }
 .dr-doc code,
 .dr-type em,
@@ -56,23 +38,24 @@ html, body {
     display: none;
 }
 pre.code code {
-    color: #fff;
+    color: #000;
 }
 pre.code {
-    background: #333;
-    color: #fff;
+    background: #eee;
+	border: solid 1px #ccc;
+    color: #000;
     overflow-x: auto;
     padding: 16px 30px;
     margin: 0 -30px;
 }
 code b {
-    color: #e9df8f;
+    color: #e98553;
     font-weight: normal;
 }
 code i,
 code i *,
 code i .d {
-    color: #8b9967;
+    color: #5c993f;
     font-style: normal;
 }
 code .s {
@@ -106,7 +89,7 @@ dd.dr-type {
 dd.dr-description {
     display: table;
     min-height: 24px;
-    border: solid 1px #eee;
+    border: solid 1px #fff;
 }
 .dr-type {
     float: left;
@@ -223,15 +206,7 @@ h5.dr-property {
     color: #009;
 }
 i.dr-trixie {
-    border: solid 10px #eee;
-    border-left-color: #999;
-    height: 0;
-    margin-left: -30px;
-    margin-top: -10px;
-    overflow: hidden;
-    position: absolute;
-    top: 50%;
-    width: 0;
+	display: none;
 }
 p.header {
     font-size: 19px;
@@ -361,37 +336,4 @@ p {
     color: #333;
     width: 70px;
     text-align: right;
-}
-
-/*Scrollbar*/
-.dr-doc::-webkit-scrollbar,
-.dr-toc::-webkit-scrollbar {
-    width: 7px;
-    height: 9px;
-}
-.dr-doc::-webkit-scrollbar-button:start:decrement, 
-.dr-doc::-webkit-scrollbar-button:end:increment,
-.dr-toc::-webkit-scrollbar-button:start:decrement, 
-.dr-toc::-webkit-scrollbar-button:end:increment {
-    display: block;
-    height: 0;
-    background-color: transparent;
-}
-.dr-doc::-webkit-scrollbar-track-piece,
-.dr-toc::-webkit-scrollbar-track-piece {
-    -webkit-border-radius: 0;
-    -webkit-border-bottom-right-radius: 4px;
-    -webkit-border-bottom-left-radius: 4px;
-}
-.dr-doc::-webkit-scrollbar-thumb:vertical,
-.dr-toc::-webkit-scrollbar-thumb:vertical {
-    height: 50px;
-    background-color: rgba(0, 0, 0, 0.2);
-    -webkit-border-radius: 4px;
-}
-.dr-doc::-webkit-scrollbar-thumb:horizontal,
-.dr-toc::-webkit-scrollbar-thumb:horizontal {
-    width: 50px;
-    background-color: rgba(0, 0, 0, 0.2);
-    -webkit-border-radius: 4px;
 }

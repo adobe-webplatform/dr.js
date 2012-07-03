@@ -6,6 +6,7 @@
  */
 var fs = require("fs"),
     path = require("path"),
+	markdown = require("markdown").markdown,
     eve = require("./eve.js");
 /*\
  * dr
@@ -31,15 +32,16 @@ module.exports = function (txt, filename, sourceFileName) {
         rdoc = /\/\*\\[\s\S]*?\\\*\//g,
         rdoc2 = /^\/\*\\\n\s*\*\s+(.*)\n([\s\S]*)\\\*\/$/,
         rows = /^\s*(\S)(?:(?!\n)\s(.*))?$/,
-        rcode = /`([^`]+)`/g,
+        // rcode = /`([^`]+)`/g,
         rkeywords = /\b(abstract|boolean|break|byte|case|catch|char|class|const|continue|debugger|default|delete|do|double|else|enum|export|extends|false|final|finally|float|for|function|goto|if|implements|import|in|instanceof|int|interface|long|native|new|null|package|private|protected|public|return|short|static|super|switch|synchronized|this|throw|throws|transient|true|try|typeof|var|void|volatile|while|with|undefined)\b/g,
         rstrings = /("[^"]*?(?:\\"[^"]*?)*"|'[^']*?(?:\\'[^']*?)*')/g,
         roperators = /( \= | \- | \+ | % | \* | \&\& | \&amp;\&amp; | \& | \&amp; | \|\| | \| | \/ | == | === )/g,
         rdigits = /(\b(0[xX][\da-fA-F]+)|((\.\d+|\b\d+(\.\d+)?)(?:e[-+]?\d+)?))\b/g,
         rcomments = /(\/\/.*?(?:\n|$)|\/\*(?:.|\s)*?\*\/)$/g,
-        rhref = /(https?:\/\/[^\s"]+[\d\w_\-\/])/g,
+        // rhref = /(https?:\/\/[^\s"]+[\d\w_\-\/])/g,
         rlink = /(^|\s)@([\w\.\_\$]*[\w\_\$])/g,
         ramp = /&(?!\w+;|#\d+;|#x[\da-f]+;)/gi,
+		rantiwrap = /^<([^>]+)>(.*)<\/\1>$/,
         main = txt.match(rdoc),
         root = {},
         mode,
@@ -57,9 +59,9 @@ module.exports = function (txt, filename, sourceFileName) {
     if (!main) {
         return {};
     }
-
+	console.log(markdown.toHTML("eve"))
     function esc(text) {
-        return String(text).replace(/</g, "&lt;").replace(ramp, '<em class="amp">&amp;</em>').replace(rcode, "<code>$1</code>").replace(rlink, '$1<a href="#$2" class="dr-link">$2</a>').replace(rhref, '<a href="$1" rel="external">$1</a>');
+        return markdown.toHTML(String(text)).replace(rantiwrap, "$2").replace(ramp, '<em class="amp">&amp;</em>').replace(rlink, '$1<a href="#$2" class="dr-link">$2</a>');
     }
     function syntax(text) {
         return text.replace(/</g, "&lt;").replace(ramp, "&amp;").replace(rkeywords, "<b>$1</b>").replace(rstrings, "<i>$1</i>").replace(roperators, '<span class="s">$1</span>').replace(rdigits, '<span class="d">$1</span>').replace(rcomments, '<span class="c">$1</span>') + "\n";

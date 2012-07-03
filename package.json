@@ -1,0 +1,21 @@
+{
+    "name"    : "dr.js",
+    "author"  : {
+        "name"  : "Dmitry Baranovskiy",
+        "email" : "dmitry@baranovskiy.com",
+        "url"   : "http://dmitry.baranovskiy.com"
+    },
+    "version" : "0.0.6",
+    "description" : "Simple JavaScript Documentation",
+    "main"    : "./doc.js",
+    "bin"     : { "dr.js" : "./dr.js" },
+    "engines" : { "node" : "*" },
+    "dependencies": {
+        "eve": "*",
+		"markdown": "*"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:DmitryBaranovskiy/dr.js.git"
+    }
+}
