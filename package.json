@@ -16,6 +16,6 @@
     },
     "repository": {
         "type": "git",
-        "url": "git@github.com:DmitryBaranovskiy/dr.js.git"
+        "url": "git@github.com:adobe-webplatform/dr.js.git"
     }
 }
