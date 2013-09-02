@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /*
- * Dr.js 0.0.6 - Simple JavaScript Documentation
+ * Dr.js 0.0.8 - Simple JavaScript Documentation
  *
- * Authro:  Dmitry Baranovskiy (http://dmitry.baranovskiy.com/)
+ * Author: Dmitry Baranovskiy (http://dmitry.baranovskiy.com/)
  */
 var fs = require("fs"),
     path = require("path"),
-	markdown = require("markdown").markdown,
-    eve = require("./eve.js");
+    markdown = require("markdown").markdown,
+    eve = require("eve");
 /*\
  * dr
  [ method ]
@@ -53,7 +53,7 @@ module.exports = function (txt, filename, sourceFileName) {
         // rhref = /(https?:\/\/[^\s"]+[\d\w_\-\/])/g,
         rlink = /(^|\s)@([\w\.\_\$]*[\w\_\$])/g,
         ramp = /&(?!\w+;|#\d+;|#x[\da-f]+;)/gi,
-		rantiwrap = /^<([^>]+)>(.*)<\/\1>$/,
+        rantiwrap = /^<([^>]+)>(.*)<\/\1>$/,
         main = txt.match(rdoc),
         root = {},
         mode,
@@ -71,19 +71,34 @@ module.exports = function (txt, filename, sourceFileName) {
     if (!main) {
         return {};
     }
-	console.log(markdown.toHTML("eve"))
     function esc(text) {
-        return markdown.toHTML(String(text)).replace(rantiwrap, "$2").replace(ramp, '<em class="amp">&amp;</em>').replace(rlink, '$1<a href="#$2" class="dr-link">$2</a>');
+        return markdown.toHTML(String(text))
+            .replace(rantiwrap, "$2")
+            .replace(ramp, '<em class="amp">&amp;</em>')
+            .replace(rlink, '$1<a href="#$2" class="dr-link">$2</a>');
     }
     function syntax(text) {
-        return text.replace(/</g, "&lt;").replace(ramp, "&amp;").replace(rkeywords, "<b>$1</b>").replace(rstrings, "<i>$1</i>").replace(roperators, '<span class="s">$1</span>').replace(rdigits, '<span class="d">$1</span>').replace(rcomments, '<span class="c">$1</span>') + "\n";
+        return text.replace(/</g, "&lt;")
+            .replace(ramp, "&amp;")
+            .replace(rkeywords, "<b>$1</b>")
+            .replace(rstrings, "<i>$1</i>")
+            .replace(roperators, '<span class="s">$1</span>')
+            .replace(rdigits, '<span class="d">$1</span>')
+            .replace(rcomments, '<span class="c">$1</span>') + "\n";
     }
     function syntaxSrc(text) {
         var isend = text.match(/\*\//);
         if (text.match(/\/\*/)) {
             syntaxSrc.inc = true;
         }
-        var out = text.replace(/</g, "&lt;").replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, "&amp;").replace(rkeywords, "<b>$1</b>").replace(rstrings, "<i>$1</i>").replace(roperators, '<span class="s">$1</span>').replace(rdigits, '<span class="d">$1</span>').replace(/(\/\*(?:.(?!\*\/))+(?:\*\/)?)/g, '<span class="c">$1</span>').replace(rcomments, '<span class="c">$1</span>') + "\n";
+        var out = text.replace(/</g, "&lt;")
+            .replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, "&amp;")
+            .replace(rkeywords, "<b>$1</b>")
+            .replace(rstrings, "<i>$1</i>")
+            .replace(roperators, '<span class="s">$1</span>')
+            .replace(rdigits, '<span class="d">$1</span>')
+            .replace(/(\/\*(?:.(?!\*\/))+(?:\*\/)?)/g, '<span class="c">$1</span>')
+            .replace(rcomments, '<span class="c">$1</span>') + "\n";
         if (syntaxSrc.inc) {
             out = out.replace(/(^.*\*\/)/, '<span class="c">$1</span>');
             if (!isend) {
@@ -97,7 +112,7 @@ module.exports = function (txt, filename, sourceFileName) {
     }
 
     eve.on("doc.*.list", function (mod, text) {
-        this != "-" && (html += "</dl>\n");
+        this != "-" && (html += "</ol></div>\n");
     });
     eve.on("doc.*.json", function (mod, text) {
         this != "o" && (html += "</ol>\n");
@@ -106,10 +121,10 @@ module.exports = function (txt, filename, sourceFileName) {
         this != "*" && (html += "</p>\n");
     });
     eve.on("doc.*.head", function (mod, text) {
-        this != "*" && (html += "</p>\n");
+        // this != "*" && (html += "</h3>\n");
     });
     eve.on("doc.*.code", function (mod, text) {
-        this != "|" && (html += "</code></pre>\n");
+        this != "|" && (html += "</code></pre></section>\n");
     });
     eve.on("doc.s*.*", function (mod, text) {
         mode != "text" && (html += "<p>");
@@ -121,8 +136,8 @@ module.exports = function (txt, filename, sourceFileName) {
         mode = "text";
     });
     eve.on("doc.s|.*", function (mod, text) {
-        mode != "code" && (html += '<pre class="javascript code"><code>');
-        html += syntax(text);
+        mode != "code" && (html += '<section class="code"><pre class="javascript code"><code data-language="javascript" class="language-javascript">');
+        html += text.replace(/</g, "&lt;").replace(ramp, "&amp;") + "\n";
         mode = "code";
     });
     eve.on("doc.s#.*", function (mod, text) {
@@ -130,8 +145,8 @@ module.exports = function (txt, filename, sourceFileName) {
         mode = "html";
     });
     eve.on("doc.s>.*", function (mod, text) {
-        mode != "head" && (html += '<p class="header">');
-        html += esc(text) + "\n";
+        mode != "head" && (html += '<h3>');
+        html += esc(text) + "</h3>";
         mode = "head";
     });
     eve.on("doc.s[.*", function (mod, text) {
@@ -165,7 +180,7 @@ module.exports = function (txt, filename, sourceFileName) {
     eve.on("doc.s-.*", function (mod, text) {
         itemData.params = itemData.params || [];
         if (mode != "list") {
-            html += '<dl class="dr-parameters">';
+            html += '<div class="topcoat-list__container"><h3 class="topcoat-list__header">Parameters</h3><ol class="topcoat-list">';
             itemData.params.push([]);
         }
         var optional,
@@ -176,18 +191,18 @@ module.exports = function (txt, filename, sourceFileName) {
         });
         var split = text.split(/(\s*[\(\)]\s*)/);
         data.push((optional ? "[" : "") + split[0] + (optional ? "]" : ""));
-        html += '<dt class="dr-param' + (optional ? " optional" : "") + '">' + split.shift() + '</dt>\n';
+        html += '<li class="topcoat-list__item"><span class="dr-param' + (optional ? " optional" : "") + '">' + split.shift() + '</span>\n';
         split.shift();
         if (optional) {
-            html += '<dd class="dr-optional">optional</dd>\n';
+            html += '<span class="dr-optional">optional</span>\n';
         }
         var types = split.shift().split(/\s*\|\s*/);
         split.shift();
-        html += '<dd class="dr-type">';
+        html += '<span class="dr-type">';
         for (var i = 0, ii = types.length; i < ii; i++) {
             types[i] = '<em class="dr-type-' + types[i] + '">' + types[i] + '</em>';
         }
-        html += types.join(" ") + '</dd>\n<dd class="dr-description">' + (esc(split.join("")) || "&#160;") + '</dd>\n';
+        html += types.join(" ") + '</span>\n<span class="dr-description">' + (esc(split.join("")) || "&#160;") + '</span></li>\n';
         mode = "list";
     });
     eve.on("doc.so.*", function (mod, text) {
@@ -294,7 +309,9 @@ module.exports = function (txt, filename, sourceFileName) {
             chunk = "";
             itemData = {};
             eve("doc.item", pointer[level[j]]);
-            chunk += '<div class="' + name.replace(/\./g, "-") + '-section"><h' + hx + ' id="' + name + '" class="' + itemData.clas + '"><i class="dr-trixie">&#160;</i>' + name;
+            chunk += '<article id="' + name + '" class="' + name.replace(/\./g, "-") + '-section"><header><h'
+                + hx + ' id="' + name + '" class="' + itemData.clas
+                + '">' + name;
             if (itemData.type && itemData.type.indexOf("method") + 1) {
                 if (itemData.params) {
                     if (itemData.params.length == 1) {
@@ -310,9 +327,10 @@ module.exports = function (txt, filename, sourceFileName) {
             }
             chunk += '<a href="#' + name + '" title="Link to this section" class="dr-hash">&#x2693;</a>';
             itemData.line && (chunk += '<a class="dr-sourceline" title="Go to line ' + itemData.line + ' in the source" href="' + srcfilename + '#L' + itemData.line + '">&#x27ad;</a>');
-            chunk += '</h' + hx + '>\n';
-            chunk += '<div class="extra" id="' + name + '-extra"></div></div>';
+            chunk += '</h' + hx + '></header>\n<section>';
+            chunk += '<div class="extra" id="' + name + '-extra"></div>';
             chunk += html;
+            chunk += '</section></article>'
             chunks[name] = chunks[name] || "";
             chunks[name] += chunk;
             res += chunk;

@@ -5,14 +5,15 @@
         "email" : "dmitry@baranovskiy.com",
         "url"   : "http://dmitry.baranovskiy.com"
     },
-    "version" : "0.0.6",
+    "version" : "0.0.8",
     "description" : "Simple JavaScript Documentation",
     "main"    : "./doc.js",
     "bin"     : { "dr.js" : "./dr.js" },
     "engines" : { "node" : "*" },
     "dependencies": {
         "eve": "*",
-		"markdown": "*"
+        "markdown": "*",
+        "topcoat": "*"
     },
     "repository": {
         "type": "git",

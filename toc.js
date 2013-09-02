@@ -15,11 +15,11 @@
     if (!ol) {
         return;
     }
-    var li = document.createElement("li"),
-        isABBR = function (str, abbr) {
+    var isABBR = function (str, abbr) {
             var letters = abbr.toUpperCase().split(""),
                 first = letters.shift(),
-                rg = new RegExp("^[" + first.toLowerCase() + first + "][a-z]*" + letters.join("[a-z]*") + "[a-z]*$");
+                rg = new RegExp("^[" + first.toLowerCase() + first + "][a-z]*"
+                    + letters.join("[a-z]*") + "[a-z]*$");
             return !!String(str).match(rg);
         },
         score = function (me, search) {
@@ -48,7 +48,6 @@
             score = Math.max(score / ii - Math.abs(me.length - ii) / me.length / 2, 0);
             return score;
         };
-    li.innerHTML = '<input type="search" id="dr-filter" results="0">';
     var lis = ol.getElementsByTagName("span"),
         names = [],
         rgName = /[^\.\(]*(?=(\(\))?$)/;
@@ -58,14 +57,14 @@
             text: lis[i].innerHTML.match(rgName)[0]
         };
     }
-    ol.insertBefore(li, ol.firstChild);
     var input = document.getElementById("dr-filter"),
-		sorter = function (a, b) {
+        sorter = function (a, b) {
             return b.weight - a.weight;
         };
-    input.style.width = "100%";
-    input.style.marginTop = "10px";
-    input.onclick = input.onchange = input.onkeydown = input.onkeyup = function () {
+    input.onclick =
+    input.onchange =
+    input.onkeydown =
+    input.onkeyup = function () {
         var v = input.value,
             res = [];
         if (v.length > 1) {
@@ -76,13 +75,11 @@
                 };
             }
             res.sort(sorter);
-            for (i = 0, ii = res.length; i < ii; i++) {
-                ol.appendChild(res[i].li);
-            }
         } else {
-            for (i = 0, ii = names.length; i < ii; i++) {
-                ol.appendChild(names[i].li);
-            }
+            res = names;
+        }
+        for (i = 0, ii = res.length; i < ii; i++) {
+            ol.appendChild(res[i].li);
         }
     };
 })(document.getElementById("dr-toc"));
