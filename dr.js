@@ -45,6 +45,10 @@ function ss(num) {
  |     "files": [{
  |         "url": "path/to/file.js",
  |         "link": "https://github.com/optional/link/to/file.js"
+ |     }],
+ |     "directories": [{
+ |         "path": "path/to/directory",
+ |         "link": "https://github.com/optional/link/to/directory"
  |     }]
  | }
  * Script runs over given files in search for special format of comments
@@ -129,6 +133,54 @@ if (files.length == 1 && path.extname(ref) == ".json") {
         files.push(path.resolve(pth, json.files[i].url));
         srcs.push(json.files[i].link);
     }
+
+
+    function walk(dir, done) {
+        var results = [],
+            list = fs.readdirSync(dir)
+            
+        var i = 0
+        ;(function next() {
+            var file = list[i++]
+
+            if (!file) return done(null, results)
+            
+            file = dir + '/' + file
+            
+            var stat = fs.statSync(file)
+            
+            if (stat && stat.isDirectory()) {
+                walk(file, function(err, res) {
+                    results = results.concat(res)
+                    next()
+                })
+            } else {
+                results.push(file)
+                next()
+            }
+        })()
+    }
+    
+    for (var i = 0, ii = json.directories && json.directories.length; i < ii; i++) {
+        var dirPath = json.directories[i].path,
+            dirLink = json.directories[i].link
+
+        walk(dirPath, function(err, results) {
+            if (err) throw err;
+
+            files = files.concat(results)
+
+            results = results.map(function(res) {
+                res.replace(dirPath + '/', '')
+                return path.join(dirLink, res)
+            })
+            
+            srcs = srcs.concat(results)
+            
+        });
+    
+    }
+
     output = path.resolve(pth, json.output) || "";
     pth = output.substring(0, output.length - path.basename(output).length)
     exec("mkdir " + pth + "js " + pth + "css " + pth + "fonts " + pth + "img");
