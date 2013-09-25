@@ -164,7 +164,7 @@ for (i = 0, ii = files.length; i < ii; i++) {
             });
         })(filename);
     } else {
-        console.log("\033[31mNo comments in Dr.js format found\033[0m");
+        console.log("\033[33m⚠  No comments in Dr.js format found\033[0m");
     }
 }
 var TOC = "",
@@ -193,7 +193,7 @@ var html = '<!DOCTYPE html>\n<html>\n  <head>\n    <meta charset="utf-8">\n    <
 for (i = 0, ii = scripts.length; i < ii; i++) {
     html += '<script src="' + scripts[i] + '"></script>\n';
 }
-html += "<script>" + fs.readFileSync("toc-min.js", "utf-8") + "</script>\n</body></html>";
+html += "<script>" + fs.readFileSync(__dirname + "/toc-min.js", "utf-8") + "</script>\n</body></html>";
 fs.writeFile(output || (getPath(fileName) + ".html"), html, function () {
     console.log("Saved to \033[32m" + (output || getPath(fileName) + ".html") + "\033[0m\n");
 });
