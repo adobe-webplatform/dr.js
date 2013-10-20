@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /*
- * Dr.js 0.0.8 - Simple JavaScript Documentation
+ * Dr.js 0.0.10 - Simple JavaScript Documentation
  *
  * Author: Dmitry Baranovskiy (http://dmitry.baranovskiy.com/)
  */
@@ -330,7 +330,7 @@ module.exports = function (txt, filename, sourceFileName) {
             chunk += '</h' + hx + '></header>\n<section>';
             chunk += '<div class="extra" id="' + name + '-extra"></div>';
             chunk += html;
-            chunk += '</section></article>'
+            chunk += '</section></article>';
             chunks[name] = chunks[name] || "";
             chunks[name] += chunk;
             res += chunk;

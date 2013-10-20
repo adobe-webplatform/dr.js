@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /*
- * Dr.js 0.0.8 - Simple JavaScript Documentation
+ * Dr.js 0.0.10 - Simple JavaScript Documentation
  *
  * Author: Dmitry Baranovskiy (http://dmitry.baranovskiy.com/)
  */
@@ -152,7 +152,7 @@ for (i = 0, ii = files.length; i < ii; i++) {
         res = docit(code, filename, srcs[i]);
     if (res.sections && res.source) {
         toc = toc.concat(res.toc);
-        for (var key in res.chunks) if (res.chunks.hasOwnProperty(key)) {
+        for (var key in res.chunks) if (res.chunks.hasOwnProperty(key) && !chunks[key]) {
             chunks[key] = res.chunks[key];
         }
         title = title || res.title;
@@ -178,7 +178,7 @@ toc.sort(function (a, b) {
     }
     return 1;
 });
-for (i = 0, ii = toc.length; i < ii; i++) if (!i || toc[i].name != toc[i - 1].name) {
+for (i = 0, ii = toc.length; i < ii; i++) if (i == ii - 1 || toc[i].name != toc[i + 1].name) {
     TOC += format('<li class="dr-lvl{indent}"><a href="#{name}" class="{clas}"><span>{name}{brackets}</span></a></li>', toc[i]);
     RES += chunks[toc[i].name] || "";
 }
