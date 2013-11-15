@@ -1,0 +1,11 @@
+{
+    "title": "Dr.js",
+    "output": "reference.html",
+    "template": "template.dot",
+    "css": "default",
+    "scripts": ["raphael.js", "reference.js"],
+    "files": [{
+        "url": "dr.js",
+        "link": "https://github.com/web-platform/dr.js/blob/master/dr.js"
+    }]
+}

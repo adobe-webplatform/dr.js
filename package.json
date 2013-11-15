@@ -5,7 +5,7 @@
         "email" : "dmitry@baranovskiy.com",
         "url"   : "http://dmitry.baranovskiy.com"
     },
-    "version" : "0.0.10",
+    "version" : "0.1.0",
     "description" : "Simple JavaScript Documentation",
     "main"    : "./doc.js",
     "bin"     : { "dr.js" : "./dr.js" },
@@ -13,7 +13,8 @@
     "dependencies": {
         "eve": "*",
         "markdown": "*",
-        "topcoat": "*"
+        "topcoat": "*",
+        "dot": "*"
     },
     "repository": {
         "type": "git",
