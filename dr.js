@@ -218,6 +218,8 @@ if (!files.length) {
     dot.templateSettings.strip = false;
     temp = dot.template(temp);
     var html = temp({
+        title: title,
+        subtitle: json.subtitle || '',
         out: sec,
         toc: betterTOC
     });
