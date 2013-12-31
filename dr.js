@@ -220,6 +220,7 @@ if (!files.length) {
     var html = temp({
         title: title,
         subtitle: json.subtitle || '',
+        scripts: scripts,
         out: sec,
         toc: betterTOC
     });

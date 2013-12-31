@@ -104,8 +104,9 @@
     </div>
     <script src="//use.edgefonts.net/source-sans-pro:n3,n4,n6;source-code-pro:n3.js"></script>
     <script src="js/prism.js"></script>
-    <script src="raphael.js"></script>
-    <script src="reference.js"></script>
+    {{~ it.scripts :scriptPath }}
+    <script src="{{= scriptPath }}"></script>
+    {{~}}
 <script>!function(e){if(e){for(var t=function(e,t){var n=t.toUpperCase().split(""),r=n.shift(),a=RegExp("^["+r.toLowerCase()+r+"][a-z]*"+n.join("[a-z]*")+"[a-z]*$")
 return!!(e+"").match(a)},n=function(e,n){e+="",n+=""
 var r,a=0
