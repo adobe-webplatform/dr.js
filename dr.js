@@ -208,7 +208,7 @@ if (!files.length) {
         return 1;
     });
 
-    var temp = fs.readFileSync(json.template || "template.dot", "utf-8"),
+    var temp = fs.readFileSync(json.template || (__dirname + "/template.dot"), "utf-8"),
         betterTOC = [];
     for (i = 0, ii = toc.length; i < ii; i++) {
         if (i == ii - 1 || toc[i].name != toc[i + 1].name) {
@@ -218,6 +218,9 @@ if (!files.length) {
     dot.templateSettings.strip = false;
     temp = dot.template(temp);
     var html = temp({
+        title: title,
+        subtitle: json.subtitle || '',
+        scripts: scripts,
         out: sec,
         toc: betterTOC
     });
