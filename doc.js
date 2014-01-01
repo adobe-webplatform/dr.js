@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /*
- * Dr.js 0.1.0 - Simple JavaScript Documentation
+ * Dr.js 0.1.1 - Simple JavaScript Documentation
  *
  * Author: Dmitry Baranovskiy (http://dmitry.baranovskiy.com/)
  */
