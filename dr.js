@@ -22,6 +22,7 @@ var fs = require("fs"),
     format = require("./formatter.js"),
     dot = require("dot"),
     _ref = require("child_process"),
+    mkdirp = require("mkdirp"),
     // spawn = _ref.spawn,
     exec = _ref.exec;
 
@@ -156,7 +157,8 @@ if (!files.length) {
         }
         json.template = json.template && path.resolve(pth, json.template);
         output = path.resolve(pth, json.output) || "";
-        pth = output.substring(0, output.length - path.basename(output).length);
+        pth = path.dirname(output) + '/';
+        mkdirp.sync(pth, 0755);
         if (json.css != "custom") {
             exec("mkdir " + pth + "js " + pth + "css " + pth + "fonts " + pth + "img");
             exec("cp " + __dirname + "/node_modules/topcoat/css/topcoat-mobile-light.css " + pth + "css/topcoat-desktop-light.css");
@@ -225,8 +227,11 @@ if (!files.length) {
         toc: betterTOC
     });
 
-    fs.writeFile(output || (getPath(fileName) + ".html"), html, function () {
-        console.log("Saved to \033[32m" + (output || getPath(fileName) + ".html") + "\033[0m\n");
+    output = output || (getPath(fileName) + ".html");
+    mkdirp.sync(path.dirname(output), 0755);
+
+    fs.writeFile(output, html, function () {
+        console.log("Saved to \033[32m" + output + "\033[0m\n");
     });    
 }
 

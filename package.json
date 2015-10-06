@@ -13,6 +13,7 @@
     "dependencies": {
         "eve": "*",
         "markdown": "*",
+        "mkdirp": "^0.5.1",
         "topcoat": "*",
         "dot": "*"
     },
