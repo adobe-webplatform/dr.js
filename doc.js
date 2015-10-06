@@ -243,6 +243,7 @@ module.exports = function (txt, filename, sourceFileName) {
             inside = false;
             eve("doc.end." + mode, null, mode, "");
             itemData.line = line + 1;
+            itemData.sourceFileName = sourceFileName;
             (function (value, Clas, data, pointer) {
                 eve.on("doc.item", function () {
                     if (this == pointer) {
